@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Vitals Ledger — Kept by A. Piatski</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..900,0..100;1,9..144,300..900,0..100&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --paper: #f1e7cd;
+      --paper-2: #ebdfbf;
+      --paper-deep: #e3d4ad;
+      --ink: #1a140d;
+      --ink-soft: #4a3c2c;
+      --ink-faint: #8a7a5e;
+      --rule: #6a5a3f;
+      --rule-soft: #c4b48c;
+      --accent: #8b1e1e;
+      --accent-deep: #5e1414;
+      --accent-2: #2d4a35;
+      --gold: #a07a2e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { font-size: 17px; scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--paper);
+      background-image:
+        radial-gradient(ellipse at 15% 8%, rgba(160, 122, 46, 0.08), transparent 55%),
+        radial-gradient(ellipse at 85% 60%, rgba(139, 30, 30, 0.05), transparent 60%),
+        radial-gradient(ellipse at 50% 100%, rgba(45, 74, 53, 0.05), transparent 50%);
+      color: var(--ink);
+      font-family: "EB Garamond", "Garamond", serif;
+      font-size: 1.05rem;
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+      font-feature-settings: "onum", "liga", "kern";
+    }
+
+    /* paper grain overlay */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0 0.05 0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/></svg>");
+      opacity: 0.35;
+      mix-blend-mode: multiply;
+      z-index: 1;
+    }
+
+    /* faint vignette */
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse at center, transparent 55%, rgba(26, 20, 13, 0.18) 100%);
+      z-index: 1;
+    }
+
+    .page {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 2.5rem clamp(1.25rem, 4vw, 4rem) 4rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ────────── MASTHEAD ────────── */
+    .masthead { padding-bottom: 1.75rem; }
+
+    .meta-strip {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--rule);
+      flex-wrap: wrap;
+    }
+    .meta-strip span:nth-child(2) { font-weight: 500; color: var(--ink); }
+    .meta-strip .dot { color: var(--accent); }
+
+    .title-wrap {
+      text-align: center;
+      padding: 1.75rem 1rem 0.5rem;
+      position: relative;
+    }
+
+    .title {
+      font-family: "Fraunces", serif;
+      font-weight: 900;
+      font-size: clamp(2.6rem, 8.5vw, 7rem);
+      line-height: 0.95;
+      letter-spacing: -0.025em;
+      font-variation-settings: "SOFT" 0, "opsz" 144;
+      color: var(--ink);
+      margin-bottom: 0.6rem;
+      max-width: 100%;
+      overflow-wrap: break-word;
+    }
+
+    .title em {
+      font-style: italic;
+      font-weight: 500;
+      font-variation-settings: "SOFT" 100, "opsz" 144;
+      color: var(--accent-deep);
+      letter-spacing: 0;
+      padding-right: 0.08em;
+      display: inline-block;
+    }
+
+    .subtitle {
+      font-family: "Instrument Serif", serif;
+      font-style: italic;
+      font-size: clamp(1.05rem, 1.5vw, 1.35rem);
+      color: var(--ink-soft);
+      letter-spacing: 0.005em;
+      max-width: 640px;
+      margin: 0.6rem auto 0;
+      line-height: 1.35;
+    }
+
+    .masthead-rule {
+      margin-top: 1.75rem;
+      border-top: 3px double var(--ink);
+      position: relative;
+    }
+    .masthead-rule::after {
+      content: "❦";
+      position: absolute;
+      top: -0.85rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--paper);
+      padding: 0 0.9rem;
+      font-size: 0.95rem;
+      color: var(--accent);
+    }
+
+    /* ────────── LEDE ────────── */
+    .lede {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 3rem;
+      padding: 2.25rem 0 2.5rem;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .kicker {
+      display: inline-block;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--accent);
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    .lede h2 {
+      font-family: "Fraunces", serif;
+      font-weight: 600;
+      font-variation-settings: "SOFT" 30, "opsz" 144;
+      font-size: clamp(1.75rem, 3.2vw, 2.85rem);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.25rem;
+      color: var(--ink);
+    }
+    .lede h2 #day-number {
+      color: var(--accent);
+      font-style: italic;
+      font-weight: 400;
+    }
+
+    .lead-paragraph {
+      font-size: 1.15rem;
+      line-height: 1.6;
+      color: var(--ink-soft);
+      max-width: 56ch;
+    }
+    .lead-paragraph::first-letter {
+      font-family: "Fraunces", serif;
+      font-weight: 900;
+      font-variation-settings: "SOFT" 0, "opsz" 144;
+      font-size: 5.2em;
+      float: left;
+      line-height: 0.82;
+      margin: 0.05em 0.12em -0.05em 0;
+      color: var(--accent);
+    }
+
+    .signature {
+      margin-top: 1.25rem;
+      font-family: "Instrument Serif", serif;
+      font-style: italic;
+      color: var(--ink-faint);
+      font-size: 1rem;
+    }
+    .signature::before {
+      content: "— ";
+    }
+
+    .streak-hero {
+      border-left: 1px solid var(--rule);
+      padding-left: 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      position: relative;
+    }
+
+    .streak-label {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      margin-bottom: 0.5rem;
+    }
+
+    .streak-number {
+      font-family: "Fraunces", serif;
+      font-weight: 900;
+      font-variation-settings: "SOFT" 0, "opsz" 144;
+      font-size: clamp(5rem, 12vw, 9rem);
+      line-height: 0.85;
+      letter-spacing: -0.06em;
+      color: var(--accent);
+      font-feature-settings: "tnum";
+      position: relative;
+    }
+    .streak-number::after {
+      content: "";
+      display: block;
+      width: 60%;
+      height: 6px;
+      background: var(--ink);
+      margin-top: 0.4rem;
+    }
+
+    .streak-unit {
+      font-family: "Instrument Serif", serif;
+      font-style: italic;
+      font-size: 1.3rem;
+      color: var(--ink);
+      margin-top: 0.6rem;
+    }
+
+    .streak-note {
+      font-family: "EB Garamond", serif;
+      font-size: 0.95rem;
+      color: var(--ink-faint);
+      margin-top: 0.75rem;
+      font-style: italic;
+      line-height: 1.4;
+    }
+
+    /* ────────── EDITOR'S COLUMN ────────── */
+    .editor-column {
+      padding: 2.75rem 0 2.75rem;
+      border-bottom: 1px solid var(--rule);
+      text-align: center;
+      position: relative;
+    }
+
+    .editor-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      align-items: center;
+      margin-bottom: 1.75rem;
+    }
+    .editor-kicker {
+      font-family: "Fraunces", serif;
+      font-weight: 700;
+      font-variation-settings: "SOFT" 30, "opsz" 144;
+      font-style: italic;
+      font-size: 1.05rem;
+      letter-spacing: 0.04em;
+      color: var(--accent);
+      padding: 0 1.25rem;
+      position: relative;
+    }
+    .editor-kicker::before, .editor-kicker::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 60px;
+      height: 1px;
+      background: var(--rule);
+    }
+    .editor-kicker::before { right: 100%; }
+    .editor-kicker::after { left: 100%; }
+    .editor-issue {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+    }
+
+    .column-title {
+      font-family: "Fraunces", serif;
+      font-style: italic;
+      font-weight: 500;
+      font-variation-settings: "SOFT" 60, "opsz" 144;
+      font-size: clamp(1.7rem, 3.4vw, 2.7rem);
+      line-height: 1.08;
+      letter-spacing: -0.015em;
+      color: var(--accent-deep);
+      max-width: 24ch;
+      margin: 0 auto 1.75rem;
+    }
+
+    .column-body {
+      font-family: "EB Garamond", serif;
+      font-size: 1.18rem;
+      line-height: 1.65;
+      color: var(--ink);
+      max-width: 60ch;
+      margin: 0 auto;
+      text-align: left;
+      font-feature-settings: "onum", "liga", "kern";
+    }
+    .column-body p { margin-bottom: 1.1rem; }
+    .column-body p:last-child { margin-bottom: 0; }
+    .column-body p:first-child::first-letter {
+      font-family: "Fraunces", serif;
+      font-weight: 900;
+      font-variation-settings: "SOFT" 0, "opsz" 144;
+      font-size: 4.4em;
+      float: left;
+      line-height: 0.82;
+      margin: 0.05em 0.12em -0.05em 0;
+      color: var(--accent);
+    }
+
+    .column-signature {
+      max-width: 60ch;
+      margin: 1.5rem auto 0;
+      text-align: right;
+      font-family: "Instrument Serif", serif;
+      font-style: italic;
+      color: var(--ink-soft);
+      font-size: 1.05rem;
+    }
+    .column-signature::before { content: "— "; }
+    .column-signature .end-mark {
+      display: block;
+      text-align: center;
+      margin-top: 1.5rem;
+      color: var(--accent);
+      font-size: 1.1rem;
+    }
+
+    .column-empty {
+      max-width: 50ch;
+      margin: 0.5rem auto 0;
+      text-align: center;
+      font-family: "Instrument Serif", serif;
+      font-style: italic;
+      color: var(--ink-faint);
+      font-size: 1.2rem;
+      line-height: 1.5;
+    }
+
+    .column-actions {
+      text-align: center;
+      margin-top: 1.75rem;
+    }
+    .edit-btn {
+      background: none;
+      border: 1px solid var(--rule);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      padding: 0.7rem 1.4rem;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+    }
+    .edit-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .column-editor {
+      max-width: 62ch;
+      margin: 1.5rem auto 0;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .column-editor[hidden] { display: none; }
+    .column-editor input[type="text"] {
+      background: transparent;
+      border: none;
+      border-bottom: 1.5px solid var(--ink);
+      font-family: "Fraunces", serif;
+      font-style: italic;
+      font-weight: 500;
+      font-variation-settings: "SOFT" 60, "opsz" 144;
+      font-size: 1.7rem;
+      color: var(--accent-deep);
+      padding: 0.5rem 0;
+      outline: none;
+      border-radius: 0;
+    }
+    .column-editor input[type="text"]:focus { border-bottom-color: var(--accent); }
+    .column-editor textarea {
+      background: rgba(255,255,255,0.25);
+      border: 1px solid var(--rule-soft);
+      font-family: "EB Garamond", serif;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: var(--ink);
+      padding: 1.1rem 1.2rem;
+      outline: none;
+      resize: vertical;
+      min-height: 240px;
+      border-radius: 0;
+    }
+    .column-editor textarea:focus { border-color: var(--accent); background: rgba(255,255,255,0.4); }
+    .editor-actions {
+      display: flex;
+      gap: 0.6rem;
+      justify-content: flex-end;
+      margin-top: 0.25rem;
+    }
+    .editor-actions button {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      padding: 0.75rem 1.3rem;
+      cursor: pointer;
+      border: 1px solid var(--ink);
+      background: transparent;
+      color: var(--ink);
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .editor-actions button[type="submit"] {
+      background: var(--ink);
+      color: var(--paper);
+    }
+    .editor-actions button[type="submit"]:hover { background: var(--accent); border-color: var(--accent); }
+    .editor-actions button[type="button"]:hover { color: var(--accent); border-color: var(--accent); }
+
+    .column-archive {
+      max-width: 62ch;
+      margin: 2rem auto 0;
+      text-align: left;
+      border-top: 1px dotted var(--rule-soft);
+      padding-top: 0.6rem;
+    }
+    .column-archive summary {
+      cursor: pointer;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      list-style: none;
+      padding: 0.6rem 0;
+      transition: color 0.2s;
+    }
+    .column-archive summary:hover { color: var(--accent); }
+    .column-archive summary::marker { display: none; }
+    .column-archive summary::-webkit-details-marker { display: none; }
+    .column-archive summary::after { content: "  →"; color: var(--accent); }
+    .column-archive[open] summary::after { content: "  ↓"; }
+    .column-archive ul {
+      list-style: none;
+      margin-top: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .column-archive li {
+      display: grid;
+      grid-template-columns: 130px 1fr;
+      gap: 1rem;
+      padding: 0.65rem 0;
+      border-bottom: 1px dotted var(--rule-soft);
+      align-items: baseline;
+      cursor: pointer;
+    }
+    .column-archive li:last-child { border-bottom: none; }
+    .column-archive li:hover .archive-title { color: var(--accent); }
+    .archive-date {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+    }
+    .archive-title {
+      font-family: "Fraunces", serif;
+      font-style: italic;
+      font-weight: 500;
+      color: var(--ink);
+      font-size: 1.1rem;
+      transition: color 0.15s;
+    }
+    .archive-body-collapsed {
+      grid-column: 1 / -1;
+      display: none;
+      margin-top: 0.85rem;
+      padding: 0.85rem 1rem;
+      background: rgba(255,255,255,0.25);
+      border-left: 3px solid var(--accent);
+      font-family: "EB Garamond", serif;
+      font-size: 1.02rem;
+      color: var(--ink-soft);
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+    .column-archive li.expanded .archive-body-collapsed { display: block; }
+
+    @media (max-width: 520px) {
+      .column-archive li { grid-template-columns: 1fr; gap: 0.25rem; }
+    }
+
+    /* ────────── SECTION HEADS ────────── */
+    .section-head {
+      font-family: "Fraunces", serif;
+      font-weight: 800;
+      font-variation-settings: "SOFT" 0, "opsz" 144;
+      font-size: 1.4rem;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 2px solid var(--ink);
+      position: relative;
+    }
+    .section-head::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -6px;
+      width: 100%;
+      height: 1px;
+      background: var(--ink);
+    }
+    .section-head .num {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      color: var(--accent);
+      vertical-align: 4px;
+      margin-right: 0.6rem;
+    }
+
+    /* ────────── SCOREBOARD ────────── */
+    .scoreboard {
+      padding: 2.5rem 0;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .scoreboard-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 0;
+    }
+
+    .metric {
+      padding: 1rem 1.25rem;
+      border-right: 1px solid var(--rule-soft);
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .metric:last-child { border-right: none; }
+    .metric:first-child { padding-left: 0; }
+
+    .metric-label {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+    }
+
+    .metric-value {
+      font-family: "Fraunces", serif;
+      font-weight: 700;
+      font-variation-settings: "SOFT" 20, "opsz" 144;
+      font-size: 2.6rem;
+      line-height: 1;
+      color: var(--ink);
+      letter-spacing: -0.03em;
+      font-feature-settings: "tnum";
+    }
+    .metric-value .metric-of {
+      font-size: 1.1rem;
+      color: var(--ink-faint);
+      font-weight: 400;
+      margin-left: 0.15rem;
+    }
+    .metric-value .metric-unit {
+      font-family: "EB Garamond", serif;
+      font-size: 0.95rem;
+      color: var(--ink-faint);
+      font-style: italic;
+      font-weight: 400;
+      margin-left: 0.3rem;
+    }
+
+    .metric-trend {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+      color: var(--ink-faint);
+    }
+    .metric-trend.up { color: var(--accent-2); }
+    .metric-trend.down { color: var(--accent); }
+
+    /* ────────── MIDDLE GRID: chart + witnesses ────────── */
+    .middle {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 3rem;
+      padding: 2.5rem 0;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    /* CHART */
+    .chart-wrap {
+      display: flex;
+      flex-direction: column;
+    }
+    .chart-caption {
+      font-family: "Instrument Serif", serif;
+      font-style: italic;
+      color: var(--ink-faint);
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .chart {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.75rem;
+      height: 240px;
+      align-items: end;
+      border-bottom: 2px solid var(--ink);
+      padding-bottom: 0;
+      position: relative;
+    }
+
+    /* dashed goal line */
+    .chart::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: var(--goal, 60%);
+      border-top: 1px dashed var(--accent);
+      opacity: 0.6;
+    }
+    .chart::after {
+      content: "GOAL · 30 MIN";
+      position: absolute;
+      right: 0;
+      bottom: calc(var(--goal, 60%) + 4px);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+      color: var(--accent);
+      background: var(--paper);
+      padding: 0 0.4rem;
+    }
+
+    .bar-col {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      height: 100%;
+      gap: 0.4rem;
+    }
+
+    .bar-value {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.7rem;
+      color: var(--ink-soft);
+      letter-spacing: 0.05em;
+    }
+
+    .bar {
+      width: 100%;
+      background: var(--ink);
+      transition: height 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+      position: relative;
+    }
+    .bar.today {
+      background: var(--accent);
+    }
+    .bar.zero {
+      background: transparent;
+      border-bottom: 3px solid var(--ink);
+      height: 4px !important;
+    }
+
+    .chart-axis {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.75rem;
+      padding-top: 0.65rem;
+    }
+    .axis-label {
+      text-align: center;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      color: var(--ink-soft);
+    }
+    .axis-label.today { color: var(--accent); font-weight: 700; }
+
+    /* WITNESSES */
+    .witnesses {
+      border-left: 1px solid var(--rule);
+      padding-left: 2rem;
+    }
+    .witness-intro {
+      font-family: "Instrument Serif", serif;
+      font-style: italic;
+      color: var(--ink-soft);
+      font-size: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .witness-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+    .witness-list li {
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 1px dotted var(--rule-soft);
+    }
+    .witness-list li:last-child { border-bottom: none; }
+    .witness-name {
+      font-family: "Fraunces", serif;
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: var(--ink);
+      flex: 1;
+    }
+    .witness-since {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      color: var(--ink-faint);
+      text-transform: uppercase;
+    }
+    .witness-seal {
+      font-family: "Fraunces", serif;
+      font-style: italic;
+      font-weight: 400;
+      color: var(--accent);
+      font-size: 0.9rem;
+    }
+
+    /* ────────── FIELD NOTES + LOG FORM ────────── */
+    .lower {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 3rem;
+      padding: 2.5rem 0;
+    }
+
+    .notes-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .note {
+      display: grid;
+      grid-template-columns: 110px 1fr auto;
+      gap: 1.25rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--rule-soft);
+      align-items: baseline;
+    }
+    .note:first-child { padding-top: 0; }
+    .note:last-child { border-bottom: none; }
+
+    .note-time {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      color: var(--ink-faint);
+      text-transform: uppercase;
+      white-space: nowrap;
+      padding-top: 0.15rem;
+    }
+    .note-time .day { color: var(--ink); font-weight: 700; }
+
+    .note-body {
+      font-size: 1.05rem;
+      line-height: 1.5;
+      color: var(--ink);
+    }
+    .note-type {
+      font-family: "Fraunces", serif;
+      font-weight: 700;
+      font-variation-settings: "SOFT" 30, "opsz" 144;
+      font-style: italic;
+      color: var(--accent);
+      margin-right: 0.4rem;
+    }
+    .note-text { color: var(--ink-soft); }
+
+    .note-tag {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      color: var(--ink-faint);
+      text-transform: uppercase;
+      padding: 0.2rem 0.5rem;
+      border: 1px solid var(--rule);
+      border-radius: 2px;
+      white-space: nowrap;
+    }
+
+    .empty-state {
+      padding: 2rem 0;
+      font-family: "Instrument Serif", serif;
+      font-style: italic;
+      color: var(--ink-faint);
+      text-align: center;
+      font-size: 1.1rem;
+    }
+
+    /* LOG FORM */
+    .log-form-wrap {
+      border-left: 1px solid var(--rule);
+      padding-left: 2rem;
+    }
+
+    .form-intro {
+      font-family: "Instrument Serif", serif;
+      font-style: italic;
+      color: var(--ink-soft);
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-bottom: 1rem;
+    }
+    .field label {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+    }
+    .field select,
+    .field input,
+    .field textarea {
+      background: transparent;
+      border: none;
+      border-bottom: 1.5px solid var(--ink);
+      font-family: "EB Garamond", serif;
+      font-size: 1.05rem;
+      color: var(--ink);
+      padding: 0.4rem 0;
+      outline: none;
+      transition: border-color 0.2s;
+      border-radius: 0;
+    }
+    .field select { cursor: pointer; }
+    .field textarea {
+      resize: vertical;
+      min-height: 60px;
+      line-height: 1.45;
+    }
+    .field select:focus,
+    .field input:focus,
+    .field textarea:focus {
+      border-bottom-color: var(--accent);
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .submit-btn {
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 1rem 1.5rem;
+      background: var(--ink);
+      color: var(--paper);
+      border: none;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      font-weight: 700;
+    }
+    .submit-btn:hover { background: var(--accent); }
+    .submit-btn:active { transform: translateY(1px); }
+    .submit-btn::after { content: " ↵"; }
+
+    .form-footnote {
+      margin-top: 1rem;
+      font-family: "EB Garamond", serif;
+      font-style: italic;
+      font-size: 0.85rem;
+      color: var(--ink-faint);
+      line-height: 1.4;
+    }
+
+    /* ────────── PULL QUOTE ────────── */
+    .pull-quote {
+      padding: 3rem 0 2rem;
+      text-align: center;
+      border-top: 4px double var(--ink);
+      border-bottom: 1px solid var(--rule);
+      margin-top: 1rem;
+      position: relative;
+    }
+    .pull-quote::before {
+      content: "“";
+      position: absolute;
+      top: -0.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--paper);
+      padding: 0 1rem;
+      font-family: "Fraunces", serif;
+      font-size: 4rem;
+      line-height: 1;
+      color: var(--accent);
+    }
+    .pull-quote q {
+      font-family: "Fraunces", serif;
+      font-weight: 400;
+      font-style: italic;
+      font-variation-settings: "SOFT" 60, "opsz" 144;
+      font-size: clamp(1.4rem, 3vw, 2.2rem);
+      line-height: 1.25;
+      color: var(--ink);
+      max-width: 30ch;
+      margin: 0 auto;
+      display: block;
+      quotes: none;
+    }
+    .pull-quote q::before, .pull-quote q::after { content: ""; }
+    .pull-quote .attrib {
+      display: block;
+      margin-top: 1rem;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+    }
+
+    /* ────────── FOOTER ────────── */
+    footer {
+      padding: 2.5rem 0 1rem;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 2rem;
+      align-items: center;
+      font-family: "EB Garamond", serif;
+      color: var(--ink-soft);
+      font-size: 0.9rem;
+    }
+    footer .colophon {
+      font-style: italic;
+      line-height: 1.5;
+    }
+    footer .seal {
+      font-family: "Fraunces", serif;
+      font-weight: 700;
+      font-style: italic;
+      font-size: 1.1rem;
+      color: var(--ink);
+      text-align: center;
+      padding: 0.5rem 1.25rem;
+      border: 1.5px solid var(--ink);
+      border-radius: 50%;
+      width: 110px;
+      height: 110px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.1;
+      transform: rotate(-4deg);
+      letter-spacing: 0.02em;
+    }
+    footer .right {
+      text-align: right;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      line-height: 1.8;
+    }
+    footer .wipe {
+      background: none;
+      border: none;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      cursor: pointer;
+      padding: 0;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    footer .wipe:hover { color: var(--accent-deep); }
+
+    /* ────────── ANIMATIONS ────────── */
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes barRise {
+      from { transform: scaleY(0); }
+      to { transform: scaleY(1); }
+    }
+    @keyframes flash {
+      0% { background: rgba(139, 30, 30, 0.22); }
+      100% { background: transparent; }
+    }
+
+    .meta-strip { animation: rise 0.6s 0.05s both ease-out; }
+    .title { animation: rise 0.9s 0.2s both cubic-bezier(0.2, 0.7, 0.2, 1); }
+    .subtitle { animation: rise 0.7s 0.5s both ease-out; }
+    .masthead-rule { animation: rise 0.6s 0.7s both ease-out; }
+    .lede > * { animation: rise 0.7s both ease-out; }
+    .lede > *:nth-child(1) { animation-delay: 0.6s; }
+    .lede > *:nth-child(2) { animation-delay: 0.85s; }
+    .scoreboard { animation: rise 0.7s 0.9s both ease-out; }
+    .middle { animation: rise 0.7s 1.05s both ease-out; }
+    .lower { animation: rise 0.7s 1.2s both ease-out; }
+    .pull-quote { animation: rise 0.7s 1.35s both ease-out; }
+
+    .bar { transform-origin: bottom; animation: barRise 0.9s 1.1s both cubic-bezier(0.2, 0.7, 0.2, 1); }
+    .bar:nth-child(1) { animation-delay: 1.10s; }
+    .bar-col:nth-child(1) .bar { animation-delay: 1.10s; }
+    .bar-col:nth-child(2) .bar { animation-delay: 1.18s; }
+    .bar-col:nth-child(3) .bar { animation-delay: 1.26s; }
+    .bar-col:nth-child(4) .bar { animation-delay: 1.34s; }
+    .bar-col:nth-child(5) .bar { animation-delay: 1.42s; }
+    .bar-col:nth-child(6) .bar { animation-delay: 1.50s; }
+    .bar-col:nth-child(7) .bar { animation-delay: 1.58s; }
+
+    .flash { animation: flash 1.4s ease-out; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-delay: 0ms !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+
+    /* ────────── RESPONSIVE ────────── */
+    @media (max-width: 920px) {
+      .lede, .middle, .lower {
+        grid-template-columns: 1fr;
+        gap: 2.25rem;
+      }
+      .streak-hero, .witnesses, .log-form-wrap {
+        border-left: none;
+        padding-left: 0;
+        border-top: 1px solid var(--rule);
+        padding-top: 2rem;
+      }
+      .scoreboard-grid {
+        grid-template-columns: repeat(3, 1fr);
+        row-gap: 1.5rem;
+      }
+      .metric:nth-child(3) { border-right: none; }
+      .metric:nth-child(4) { padding-left: 0; }
+      .note { grid-template-columns: 90px 1fr; }
+      .note-tag { grid-column: 2; justify-self: start; }
+      footer { grid-template-columns: 1fr; text-align: center; }
+      footer .right { text-align: center; }
+      footer .seal { margin: 0 auto; }
+    }
+
+    @media (max-width: 520px) {
+      .meta-strip { font-size: 0.6rem; gap: 0.5rem; }
+      .meta-strip span:nth-child(2) { order: -1; width: 100%; text-align: center; }
+      .scoreboard-grid { grid-template-columns: repeat(2, 1fr); }
+      .metric { border-right: none; border-bottom: 1px solid var(--rule-soft); padding: 0.85rem 0.5rem; }
+      .field-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <!-- ═══════════ MASTHEAD ═══════════ -->
+    <header class="masthead">
+      <div class="meta-strip">
+        <span>VOL. I · NO. <span id="edition">001</span></span>
+        <span id="today-date">SATURDAY, MAY 2, 2026</span>
+        <span>KEPT BY A. PIATSKI <span class="dot">·</span> EST. MMXXVI</span>
+      </div>
+      <div class="title-wrap">
+        <h1 class="title">The Vitals <em>Ledger</em></h1>
+        <p class="subtitle">An honest daily reckoning of one mortal body — kept openly, witnessed by friends.</p>
+      </div>
+      <div class="masthead-rule"></div>
+    </header>
+
+    <!-- ═══════════ LEDE ═══════════ -->
+    <section class="lede">
+      <div>
+        <span class="kicker">Today's Reckoning</span>
+        <h2>Day <span id="day-number">1</span> of the long, ungentle project of staying alive on purpose.</h2>
+        <p class="lead-paragraph">
+          The record continues. What follows is a faithful account of what the body has done, eaten, slept, and lifted. There is no cleaning it up after the fact. The work either happened or it did not, and either way it is published here.
+        </p>
+        <p class="signature">Filed from the kitchen table, with coffee, before anyone else was up.</p>
+      </div>
+      <aside class="streak-hero">
+        <div class="streak-label">Current Streak</div>
+        <div class="streak-number" id="streak-count">0</div>
+        <div class="streak-unit">consecutive days</div>
+        <div class="streak-note">— without breaking the daily commitments. The ledger does not lie. —</div>
+      </aside>
+    </section>
+
+    <!-- ═══════════ EDITOR'S COLUMN ═══════════ -->
+    <section class="editor-column">
+      <div class="editor-meta">
+        <span class="editor-kicker">From the Editor's Desk</span>
+        <span class="editor-issue">Issue No. <span id="column-issue">01</span> · Week of <span id="column-week">May 2</span></span>
+      </div>
+      <div id="column-display">
+        <h2 class="column-title" id="column-title">—</h2>
+        <div class="column-body" id="column-body"></div>
+        <div class="column-signature" id="column-signature"></div>
+        <p class="column-empty" id="column-empty" hidden>
+          No column has been filed for this week.<br>
+          Sunday morning, with coffee — that is the appointed hour.
+        </p>
+      </div>
+      <form class="column-editor" id="column-editor" hidden>
+        <input type="text" id="column-title-input" placeholder="Headline of the week" required />
+        <textarea id="column-body-input" placeholder="What did the week ask of you, and what did you give it? Two paragraphs is plenty." required></textarea>
+        <div class="editor-actions">
+          <button type="button" id="cancel-edit">Cancel</button>
+          <button type="submit">Publish to the record</button>
+        </div>
+      </form>
+      <div class="column-actions">
+        <button class="edit-btn" id="edit-column">✎ Compose this week's column</button>
+      </div>
+      <details class="column-archive">
+        <summary>Previous columns</summary>
+        <ul id="column-archive-list"></ul>
+      </details>
+    </section>
+
+    <!-- ═══════════ SCOREBOARD ═══════════ -->
+    <section class="scoreboard">
+      <h3 class="section-head"><span class="num">§ 02</span>The Vitals · This Week</h3>
+      <div class="scoreboard-grid" id="scoreboard">
+        <!-- populated by JS -->
+      </div>
+    </section>
+
+    <!-- ═══════════ MIDDLE ═══════════ -->
+    <section class="middle">
+      <div class="chart-wrap">
+        <h3 class="section-head"><span class="num">§ 03</span>The Week in Movement</h3>
+        <p class="chart-caption">Minutes of deliberate, honest exertion, plotted across the last seven days. Days without effort are marked plainly, in keeping with the truth.</p>
+        <div class="chart" id="chart" style="--goal: 60%;">
+          <!-- populated by JS -->
+        </div>
+        <div class="chart-axis" id="chart-axis">
+          <!-- populated by JS -->
+        </div>
+      </div>
+      <aside class="witnesses">
+        <h3 class="section-head"><span class="num">§ 04</span>Witnesses</h3>
+        <p class="witness-intro">The following parties are watching. Their disappointment is part of the system.</p>
+        <ul class="witness-list">
+          <li>
+            <span class="witness-name">M. Harkavy</span>
+            <span class="witness-seal">vouches</span>
+            <span class="witness-since">Since Apr ’26</span>
+          </li>
+          <li>
+            <span class="witness-name">J. Owens</span>
+            <span class="witness-seal">vouches</span>
+            <span class="witness-since">Since Apr ’26</span>
+          </li>
+          <li>
+            <span class="witness-name">S. Ryland</span>
+            <span class="witness-seal">vouches</span>
+            <span class="witness-since">Since Apr ’26</span>
+          </li>
+          <li>
+            <span class="witness-name">D. Klein, M.D.</span>
+            <span class="witness-seal">attests</span>
+            <span class="witness-since">Since Mar ’26</span>
+          </li>
+          <li>
+            <span class="witness-name">The reader</span>
+            <span class="witness-seal">whoever you are</span>
+            <span class="witness-since">Just now</span>
+          </li>
+        </ul>
+      </aside>
+    </section>
+
+    <!-- ═══════════ LOWER: FIELD NOTES + FORM ═══════════ -->
+    <section class="lower">
+      <div>
+        <h3 class="section-head"><span class="num">§ 05</span>Field Notes</h3>
+        <div class="notes-list" id="notes-list">
+          <!-- populated by JS -->
+        </div>
+      </div>
+      <aside class="log-form-wrap">
+        <h3 class="section-head"><span class="num">§ 06</span>File a Report</h3>
+        <p class="form-intro">A new entry, plainly stated. The act of writing it down is half the discipline.</p>
+        <form id="log-form">
+          <div class="field">
+            <label for="type">Category</label>
+            <select id="type" name="type" required>
+              <option value="workout">Workout · movement, lifting, running</option>
+              <option value="sleep">Sleep · hours of true rest</option>
+              <option value="meal">Meal · what passed the lips</option>
+              <option value="water">Water · glasses drunk</option>
+              <option value="weight">Weight · the number on the scale</option>
+              <option value="mind">Mindfulness · meditation, reading</option>
+              <option value="failure">Failure · admitted, plainly</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="amount">Amount</label>
+              <input type="text" id="amount" name="amount" placeholder="e.g. 45 min" />
+            </div>
+            <div class="field">
+              <label for="time">Time of day</label>
+              <input type="time" id="time" name="time" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="note">Note for the record</label>
+            <textarea id="note" name="note" placeholder="Be honest. The future reader is you."></textarea>
+          </div>
+          <button type="submit" class="submit-btn">Enter into the record</button>
+          <p class="form-footnote">Reports are kept locally in this browser. Nothing is sent anywhere — the accountability is between you and the page.</p>
+        </form>
+      </aside>
+    </section>
+
+    <!-- ═══════════ PULL QUOTE ═══════════ -->
+    <section class="pull-quote">
+      <q>The body is the only address you cannot move out of. Tend to it like a house you intend to live in for a long time.</q>
+      <span class="attrib">— A note pinned above the desk —</span>
+    </section>
+
+    <!-- ═══════════ FOOTER ═══════════ -->
+    <footer>
+      <div class="colophon">
+        Set in <em>Fraunces</em>, <em>EB Garamond</em>, <em>Instrument Serif</em>, and <em>JetBrains Mono</em>.<br>
+        Published every day from one mortal body, in good faith.
+      </div>
+      <div class="seal">Vitals<br>Ledger<br>MMXXVI</div>
+      <div class="right">
+        Printed on this device · <span id="footer-date">2026.05.02</span><br>
+        <button class="wipe" id="wipe-btn">Wipe ledger →</button>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // ─── DATA LAYER ───────────────────────────────────────
+    const STORAGE_KEY = "vitals.ledger.v1";
+    const START_KEY = "vitals.ledger.start";
+
+    function loadEntries() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch (e) { return null; }
+    }
+
+    function saveEntries(entries) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    }
+
+    function getStartDate() {
+      let s = localStorage.getItem(START_KEY);
+      if (!s) {
+        s = new Date().toISOString();
+        localStorage.setItem(START_KEY, s);
+      }
+      return new Date(s);
+    }
+
+    // Seed the ledger on first visit so the page feels alive.
+    function seedIfEmpty() {
+      const existing = loadEntries();
+      if (existing && existing.length) return existing;
+      const now = Date.now();
+      const day = 24 * 60 * 60 * 1000;
+      const samples = [
+        { offset: 0,    type: "workout", amount: "42 min",   note: "Easy run along the river. Breath was even. Mind was loud." },
+        { offset: 0,    type: "water",   amount: "6 glasses", note: "On track. Black coffee not counted, regrettably." },
+        { offset: 1,    type: "sleep",   amount: "7h 12m",   note: "Down at eleven, up at six-twelve. Honest." },
+        { offset: 1,    type: "workout", amount: "55 min",   note: "Lifting — lower body. Squat felt heavy. Squat is heavy." },
+        { offset: 2,    type: "meal",    amount: "",         note: "Big salad, two eggs, sourdough. Apple after." },
+        { offset: 2,    type: "mind",    amount: "20 min",   note: "Sat with the breath. Wandered. Came back. Wandered. Came back." },
+        { offset: 3,    type: "workout", amount: "30 min",   note: "Yoga at home, the slow kind. Hips will thank me." },
+        { offset: 4,    type: "sleep",   amount: "6h 40m",   note: "Stayed up too late. Tomorrow I won't." },
+        { offset: 5,    type: "workout", amount: "65 min",   note: "Long run. Six miles, two of them honest." },
+        { offset: 5,    type: "weight",  amount: "182.4 lbs", note: "Down a touch from last Saturday. Slow and on purpose." },
+        { offset: 6,    type: "failure", amount: "",         note: "Skipped the planned workout. Watched a film instead. Logging it because that is the deal." },
+      ];
+      const seeded = samples.map((s, i) => ({
+        id: now - s.offset * day - i * 1000,
+        ts: now - s.offset * day - (Math.floor(Math.random() * 6 + 7) * 3600000),
+        type: s.type,
+        amount: s.amount,
+        note: s.note,
+      })).sort((a, b) => b.ts - a.ts);
+      saveEntries(seeded);
+      // backdate the start so day count matches
+      const start = new Date(now - 12 * day);
+      localStorage.setItem(START_KEY, start.toISOString());
+      return seeded;
+    }
+
+    // ─── DERIVED STATE ────────────────────────────────────
+    const TYPE_LABELS = {
+      workout: "Workout",
+      sleep: "Sleep",
+      meal: "Meal",
+      water: "Water",
+      weight: "Weight",
+      mind: "Mindfulness",
+      failure: "Failure",
+      other: "Note",
+    };
+
+    function dayKey(ts) {
+      const d = new Date(ts);
+      return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+    }
+
+    function calcStreak(entries) {
+      if (!entries.length) return 0;
+      const days = new Set(entries.map(e => dayKey(e.ts)));
+      let streak = 0;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      // allow today to be empty without breaking yesterday's streak — count from yesterday if today has no entry
+      let cursor = new Date(today);
+      if (!days.has(dayKey(cursor))) {
+        cursor.setDate(cursor.getDate() - 1);
+      }
+      while (days.has(dayKey(cursor))) {
+        streak += 1;
+        cursor.setDate(cursor.getDate() - 1);
+      }
+      return streak;
+    }
+
+    function dayNumber() {
+      const start = getStartDate();
+      const today = new Date();
+      const diff = Math.floor((today - start) / (1000 * 60 * 60 * 24)) + 1;
+      return Math.max(1, diff);
+    }
+
+    function lastNDays(n) {
+      const days = [];
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      for (let i = n - 1; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        days.push(d);
+      }
+      return days;
+    }
+
+    function parseMinutes(amount) {
+      if (!amount) return 0;
+      const s = String(amount).toLowerCase();
+      const hMatch = s.match(/(\d+(?:\.\d+)?)\s*h/);
+      const mMatch = s.match(/(\d+(?:\.\d+)?)\s*m/);
+      const plainMin = s.match(/^(\d+(?:\.\d+)?)\s*min/);
+      const plainNum = s.match(/^(\d+(?:\.\d+)?)$/);
+      let mins = 0;
+      if (hMatch) mins += parseFloat(hMatch[1]) * 60;
+      if (mMatch && !plainMin) mins += parseFloat(mMatch[1]);
+      if (plainMin) mins = parseFloat(plainMin[1]);
+      else if (plainNum && !hMatch && !mMatch) mins = parseFloat(plainNum[1]);
+      return mins;
+    }
+
+    function weekStats(entries) {
+      const days = lastNDays(7);
+      const stats = {
+        workouts: 0,
+        workoutGoal: 5,
+        sleepHours: [],
+        glasses: 0,
+        meditationMin: 0,
+        weights: [],
+        failures: 0,
+      };
+      const cutoff = days[0].getTime();
+      entries.forEach(e => {
+        if (e.ts < cutoff) return;
+        if (e.type === "workout") stats.workouts += 1;
+        if (e.type === "sleep") {
+          const h = parseFloat(String(e.amount).match(/(\d+(?:\.\d+)?)/)?.[1] || "0");
+          if (h) stats.sleepHours.push(h);
+        }
+        if (e.type === "water") {
+          const g = parseInt(String(e.amount).match(/(\d+)/)?.[1] || "0", 10);
+          stats.glasses += g;
+        }
+        if (e.type === "mind") stats.meditationMin += parseMinutes(e.amount);
+        if (e.type === "weight") {
+          const w = parseFloat(String(e.amount).match(/(\d+(?:\.\d+)?)/)?.[1] || "0");
+          if (w) stats.weights.push(w);
+        }
+        if (e.type === "failure") stats.failures += 1;
+      });
+      stats.avgSleep = stats.sleepHours.length
+        ? (stats.sleepHours.reduce((a, b) => a + b, 0) / stats.sleepHours.length).toFixed(1)
+        : "—";
+      stats.latestWeight = stats.weights.length ? stats.weights[0].toFixed(1) : "—";
+      return stats;
+    }
+
+    function chartData(entries) {
+      const days = lastNDays(7);
+      return days.map((d, i) => {
+        const key = dayKey(d.getTime());
+        let mins = 0;
+        entries.forEach(e => {
+          if (dayKey(e.ts) !== key) return;
+          if (e.type === "workout" || e.type === "mind") {
+            mins += parseMinutes(e.amount);
+          }
+        });
+        return {
+          date: d,
+          minutes: Math.round(mins),
+          label: ["S", "M", "T", "W", "T", "F", "S"][d.getDay()],
+          isToday: i === 6,
+        };
+      });
+    }
+
+    // ─── RENDER ───────────────────────────────────────────
+    function fmtDate(d) {
+      const months = ["JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"];
+      const days = ["SUNDAY","MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY"];
+      return days[d.getDay()] + ", " + months[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear();
+    }
+
+    function fmtFooter(d) {
+      const pad = n => String(n).padStart(2, "0");
+      return d.getFullYear() + "." + pad(d.getMonth() + 1) + "." + pad(d.getDate());
+    }
+
+    function fmtNoteTime(ts) {
+      const d = new Date(ts);
+      const today = new Date(); today.setHours(0,0,0,0);
+      const that = new Date(d); that.setHours(0,0,0,0);
+      const diff = Math.round((today - that) / (24*3600*1000));
+      let day;
+      if (diff === 0) day = "TODAY";
+      else if (diff === 1) day = "YESTERDAY";
+      else day = diff + " DAYS AGO";
+      const hh = String(d.getHours()).padStart(2,"0");
+      const mm = String(d.getMinutes()).padStart(2,"0");
+      return { day, time: hh + ":" + mm };
+    }
+
+    function renderHeader() {
+      const now = new Date();
+      document.getElementById("today-date").textContent = fmtDate(now);
+      document.getElementById("footer-date").textContent = fmtFooter(now);
+      const dayN = dayNumber();
+      document.getElementById("day-number").textContent = dayN;
+      document.getElementById("edition").textContent = String(dayN).padStart(3, "0");
+    }
+
+    function renderStreak(entries) {
+      document.getElementById("streak-count").textContent = calcStreak(entries);
+    }
+
+    function renderScoreboard(entries) {
+      const s = weekStats(entries);
+      const items = [
+        { label: "Workouts", value: s.workouts, of: s.workoutGoal, trend: s.workouts >= s.workoutGoal ? "↑ goal met" : (s.workoutGoal - s.workouts) + " to go", trendClass: s.workouts >= s.workoutGoal ? "up" : "" },
+        { label: "Sleep avg", value: s.avgSleep, unit: "hrs", trend: s.sleepHours.length + " nights logged", trendClass: "" },
+        { label: "Mindfulness", value: s.meditationMin, unit: "min", trend: s.meditationMin >= 70 ? "↑ steady" : "shore it up", trendClass: s.meditationMin >= 70 ? "up" : "" },
+        { label: "Water", value: s.glasses, unit: "gl.", trend: s.glasses >= 35 ? "↑ hydrated" : "drink more", trendClass: s.glasses >= 35 ? "up" : "" },
+        { label: "Weight", value: s.latestWeight, unit: "lbs", trend: "latest", trendClass: "" },
+        { label: "Admitted failures", value: s.failures, trend: s.failures === 0 ? "none on record" : "← honest", trendClass: s.failures === 0 ? "up" : "down" },
+      ];
+      const html = items.map(it => `
+        <div class="metric">
+          <div class="metric-label">${it.label}</div>
+          <div class="metric-value">${it.value}${it.of ? `<span class="metric-of">/ ${it.of}</span>` : ""}${it.unit ? `<span class="metric-unit">${it.unit}</span>` : ""}</div>
+          <div class="metric-trend ${it.trendClass}">${it.trend}</div>
+        </div>
+      `).join("");
+      document.getElementById("scoreboard").innerHTML = html;
+    }
+
+    function renderChart(entries) {
+      const data = chartData(entries);
+      const max = Math.max(60, ...data.map(d => d.minutes));
+      const chart = document.getElementById("chart");
+      const axis = document.getElementById("chart-axis");
+      chart.innerHTML = data.map(d => {
+        const pct = max > 0 ? Math.max(2, (d.minutes / max) * 100) : 0;
+        const zeroClass = d.minutes === 0 ? "zero" : "";
+        const todayClass = d.isToday ? "today" : "";
+        return `
+          <div class="bar-col">
+            <span class="bar-value">${d.minutes || "—"}</span>
+            <div class="bar ${zeroClass} ${todayClass}" style="height: ${pct}%;"></div>
+          </div>
+        `;
+      }).join("");
+      axis.innerHTML = data.map(d => `
+        <div class="axis-label ${d.isToday ? "today" : ""}">${d.label}</div>
+      `).join("");
+      // dashed goal line at 30 min relative to max
+      const goalPct = Math.min(95, Math.max(10, (30 / max) * 100));
+      chart.style.setProperty("--goal", goalPct + "%");
+    }
+
+    function renderNotes(entries) {
+      const list = document.getElementById("notes-list");
+      if (!entries.length) {
+        list.innerHTML = `<div class="empty-state">The ledger is blank. The first entry is the hardest, then it isn't.</div>`;
+        return;
+      }
+      const recent = entries.slice(0, 9);
+      list.innerHTML = recent.map(e => {
+        const t = fmtNoteTime(e.ts);
+        const label = TYPE_LABELS[e.type] || "Note";
+        const amount = e.amount ? ` · <span style="font-family:'JetBrains Mono',monospace;font-size:0.85em;color:var(--ink);">${escapeHtml(e.amount)}</span>` : "";
+        return `
+          <div class="note">
+            <div class="note-time"><span class="day">${t.day}</span><br>${t.time}</div>
+            <div class="note-body">
+              <span class="note-type">${label}.</span>
+              <span class="note-text">${escapeHtml(e.note || "—")}</span>
+            </div>
+            <span class="note-tag">${e.type === "failure" ? "ON HONOR" : "LOGGED"}${amount}</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
+      }[c]));
+    }
+
+    function renderAll(entries) {
+      renderHeader();
+      renderStreak(entries);
+      renderScoreboard(entries);
+      renderChart(entries);
+      renderNotes(entries);
+    }
+
+    // ─── EDITOR'S COLUMN ──────────────────────────────────
+    const COLUMNS_KEY = "vitals.ledger.columns.v1";
+
+    function loadColumns() {
+      try {
+        const raw = localStorage.getItem(COLUMNS_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch (e) { return null; }
+    }
+    function saveColumns(cols) {
+      localStorage.setItem(COLUMNS_KEY, JSON.stringify(cols));
+    }
+    function startOfWeek(d) {
+      const x = new Date(d);
+      x.setHours(0, 0, 0, 0);
+      x.setDate(x.getDate() - x.getDay()); // Sunday-anchored
+      return x;
+    }
+    function fmtWeekOf(d) {
+      const sd = startOfWeek(d);
+      const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      return months[sd.getMonth()] + " " + sd.getDate();
+    }
+    function getCurrentColumn(cols) {
+      const wk = startOfWeek(new Date()).getTime();
+      return cols.find(c => startOfWeek(new Date(c.ts)).getTime() === wk);
+    }
+
+    function seedColumnsIfEmpty() {
+      const existing = loadColumns();
+      if (existing && existing.length) return existing;
+      const today = new Date();
+      const thisSun = startOfWeek(today);
+      const lastSun = new Date(thisSun); lastSun.setDate(lastSun.getDate() - 7);
+      const twoSun = new Date(thisSun); twoSun.setDate(twoSun.getDate() - 14);
+      const cols = [
+        {
+          id: thisSun.getTime(),
+          ts: thisSun.getTime(),
+          title: "On the small lies we tell ourselves about Tuesdays",
+          body: "There is a particular flavor of self-deception reserved for the middle of the week. By Tuesday evening the bargains begin — I will go tomorrow, I am owed a rest, the work I did Monday counts twice. None of these are true. The body keeps a different ledger than the mind, and Tuesdays do not get bonus credit.\n\nThis week the math was: four workouts where I had hoped for five, sleep averaging six and a half hours where the goal is seven, and one Wednesday where I sat in a chair for nine consecutive hours and called it productivity. The chair won. I am writing it down so it does not win again next week.\n\nWhat I will do better, plainly: bed by eleven, phone in another room, Tuesday workout non-negotiable. The rest will sort itself out — it usually does, when the foundations hold.",
+          signature: "A. Piatski, Sunday morning, with coffee",
+        },
+        {
+          id: lastSun.getTime(),
+          ts: lastSun.getTime(),
+          title: "Begin again, but better than last time",
+          body: "The thing about beginning again is that you have data now. The first beginning is hopeful and ignorant — both gifts. The second beginning is honest. You know what broke last time, and you know it was you who broke it.\n\nThe plan this season is small. Three lifts a week, two runs, one long slow Sunday session of nothing in particular. Sleep is not a target this round, it is a non-negotiable. Weight will go where it goes. Mood is the leading indicator and I will treat it as such.\n\nIf you are reading this and you are also beginning again — welcome. The water is fine. We are all just trying not to forget our own bodies.",
+          signature: "A. Piatski",
+        },
+        {
+          id: twoSun.getTime(),
+          ts: twoSun.getTime(),
+          title: "On being witnessed",
+          body: "It is one thing to keep a ledger in a drawer. It is another to leave it open on the kitchen table where anyone might walk in and read it. The whole project changes when there is the possibility of being seen.\n\nI used to be embarrassed about wanting to be seen. I am less so now. The wanting is not the problem; the hiding is. So this is the experiment: keep the record openly, name the people who are watching, and do the work in front of them.",
+          signature: "A. Piatski",
+        },
+      ];
+      saveColumns(cols);
+      return cols;
+    }
+
+    let columns = seedColumnsIfEmpty();
+
+    function renderColumn() {
+      const issueEl = document.getElementById("column-issue");
+      const weekEl = document.getElementById("column-week");
+      const titleEl = document.getElementById("column-title");
+      const bodyEl = document.getElementById("column-body");
+      const sigEl = document.getElementById("column-signature");
+      const emptyEl = document.getElementById("column-empty");
+
+      const current = getCurrentColumn(columns);
+
+      if (current) {
+        emptyEl.hidden = true;
+        titleEl.hidden = false;
+        bodyEl.hidden = false;
+        sigEl.hidden = false;
+        titleEl.textContent = current.title;
+        bodyEl.innerHTML = current.body
+          .split(/\n\n+/)
+          .map(p => `<p>${escapeHtml(p)}</p>`)
+          .join("");
+        sigEl.innerHTML = `${escapeHtml(current.signature)}<span class="end-mark">❦</span>`;
+        issueEl.textContent = String(columns.length).padStart(2, "0");
+        weekEl.textContent = fmtWeekOf(new Date(current.ts));
+      } else {
+        emptyEl.hidden = false;
+        titleEl.hidden = true;
+        bodyEl.hidden = true;
+        sigEl.hidden = true;
+        issueEl.textContent = String(columns.length + 1).padStart(2, "0");
+        weekEl.textContent = fmtWeekOf(new Date());
+      }
+      renderArchive();
+    }
+
+    function renderArchive() {
+      const list = document.getElementById("column-archive-list");
+      const wk = startOfWeek(new Date()).getTime();
+      const past = columns
+        .filter(c => startOfWeek(new Date(c.ts)).getTime() !== wk)
+        .sort((a, b) => b.ts - a.ts);
+      if (!past.length) {
+        list.innerHTML = `<li style="display:block;color:var(--ink-faint);font-style:italic;border:none;cursor:default;">No earlier columns yet.</li>`;
+        return;
+      }
+      list.innerHTML = past.map(c => `
+        <li data-id="${c.id}">
+          <span class="archive-date">Wk of ${escapeHtml(fmtWeekOf(new Date(c.ts)))}</span>
+          <span class="archive-title">${escapeHtml(c.title)}</span>
+          <div class="archive-body-collapsed">${escapeHtml(c.body)}</div>
+        </li>
+      `).join("");
+      list.querySelectorAll("li[data-id]").forEach(li => {
+        li.addEventListener("click", () => li.classList.toggle("expanded"));
+      });
+    }
+
+    renderColumn();
+
+    // editor toggling
+    const editBtn = document.getElementById("edit-column");
+    const cancelBtn = document.getElementById("cancel-edit");
+    const editorForm = document.getElementById("column-editor");
+    const titleInput = document.getElementById("column-title-input");
+    const bodyInput = document.getElementById("column-body-input");
+    const columnDisplay = document.getElementById("column-display");
+    const archiveBlock = document.querySelector(".column-archive");
+
+    function openColumnEditor() {
+      const current = getCurrentColumn(columns);
+      titleInput.value = current ? current.title : "";
+      bodyInput.value = current ? current.body : "";
+      editorForm.hidden = false;
+      columnDisplay.hidden = true;
+      editBtn.hidden = true;
+      archiveBlock.hidden = true;
+      titleInput.focus();
+    }
+    function closeColumnEditor() {
+      editorForm.hidden = true;
+      columnDisplay.hidden = false;
+      editBtn.hidden = false;
+      archiveBlock.hidden = false;
+    }
+    editBtn.addEventListener("click", openColumnEditor);
+    cancelBtn.addEventListener("click", closeColumnEditor);
+    editorForm.addEventListener("submit", (ev) => {
+      ev.preventDefault();
+      const title = titleInput.value.trim();
+      const body = bodyInput.value.trim();
+      if (!title || !body) return;
+      const wk = startOfWeek(new Date()).getTime();
+      const existing = columns.find(c => startOfWeek(new Date(c.ts)).getTime() === wk);
+      if (existing) {
+        existing.title = title;
+        existing.body = body;
+      } else {
+        columns = [{
+          id: Date.now(),
+          ts: Date.now(),
+          title,
+          body,
+          signature: "A. Piatski, Sunday morning, with coffee",
+        }, ...columns];
+      }
+      saveColumns(columns);
+      renderColumn();
+      closeColumnEditor();
+    });
+
+    // ─── INIT ─────────────────────────────────────────────
+    let entries = seedIfEmpty();
+    renderAll(entries);
+
+    // ─── FORM ─────────────────────────────────────────────
+    document.getElementById("log-form").addEventListener("submit", (ev) => {
+      ev.preventDefault();
+      const form = ev.target;
+      const type = form.type.value;
+      const amount = form.amount.value.trim();
+      const note = form.note.value.trim();
+      const timeVal = form.time.value;
+      let ts = Date.now();
+      if (timeVal) {
+        const [hh, mm] = timeVal.split(":").map(Number);
+        const d = new Date();
+        d.setHours(hh || 0, mm || 0, 0, 0);
+        ts = d.getTime();
+      }
+      const entry = { id: ts, ts, type, amount, note };
+      entries = [entry, ...entries].sort((a, b) => b.ts - a.ts);
+      saveEntries(entries);
+      renderAll(entries);
+      form.reset();
+      // flash the most recent note
+      const first = document.querySelector(".notes-list .note");
+      if (first) {
+        first.classList.add("flash");
+        setTimeout(() => first.classList.remove("flash"), 1500);
+      }
+      // re-trigger bar animation
+      document.querySelectorAll(".bar").forEach(b => {
+        b.style.animation = "none";
+        // eslint-disable-next-line no-unused-expressions
+        b.offsetHeight;
+        b.style.animation = "";
+      });
+    });
+
+    // ─── WIPE ─────────────────────────────────────────────
+    document.getElementById("wipe-btn").addEventListener("click", () => {
+      if (!confirm("Wipe the ledger? Every entry and every column will be lost. Streak resets to zero.")) return;
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(START_KEY);
+      localStorage.removeItem(COLUMNS_KEY);
+      entries = seedIfEmpty();
+      columns = seedColumnsIfEmpty();
+      renderAll(entries);
+      renderColumn();
+    });
+
+    // Set default time field to now for convenience
+    (function setDefaultTime() {
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2,"0");
+      const mm = String(now.getMinutes()).padStart(2,"0");
+      document.getElementById("time").value = hh + ":" + mm;
+    })();
+  </script>
+</body>
+</html>
