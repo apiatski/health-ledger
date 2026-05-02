@@ -273,6 +273,61 @@
       line-height: 1.4;
     }
 
+    /* ────────── FROM THE RING ribbon ────────── */
+    .ring-ribbon {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 1.5rem;
+      padding: 0.85rem 1.1rem;
+      margin-top: 1.25rem;
+      border: 1px solid var(--rule);
+      background: rgba(255, 255, 255, 0.18);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      animation: rise 0.6s 0.95s both ease-out;
+    }
+    .ring-ribbon[hidden] { display: none; }
+    .ring-label {
+      font-family: "Fraunces", serif;
+      font-style: italic;
+      font-weight: 600;
+      font-variation-settings: "SOFT" 60, "opsz" 144;
+      font-size: 0.85rem;
+      letter-spacing: 0.02em;
+      text-transform: none;
+      color: var(--accent);
+      padding-right: 1rem;
+      border-right: 1px solid var(--rule-soft);
+    }
+    .ring-stat b {
+      font-weight: 500;
+      color: var(--ink-faint);
+      margin-right: 0.45rem;
+    }
+    .ring-stat span {
+      color: var(--ink);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.04em;
+    }
+    .ring-stat.poor span { color: var(--accent); }
+    .ring-stat.good span { color: var(--accent-2); }
+    .ring-stamp {
+      margin-left: auto;
+      color: var(--ink-faint);
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+    }
+    @media (max-width: 720px) {
+      .ring-ribbon { gap: 0.85rem; }
+      .ring-label { border-right: none; padding-right: 0; width: 100%; }
+      .ring-stamp { margin-left: 0; width: 100%; }
+    }
+
     /* ────────── EDITOR'S COLUMN ────────── */
     .editor-column {
       padding: 2.75rem 0 2.75rem;
@@ -1150,6 +1205,16 @@
       <div class="masthead-rule"></div>
     </header>
 
+    <!-- ═══════════ FROM THE RING (Oura ribbon) ═══════════ -->
+    <aside class="ring-ribbon" id="ring-ribbon" hidden>
+      <span class="ring-label">From the Ring</span>
+      <span class="ring-stat"><b>Readiness</b> <span id="ring-readiness">—</span></span>
+      <span class="ring-stat"><b>Sleep</b> <span id="ring-sleep">—</span></span>
+      <span class="ring-stat"><b>Activity</b> <span id="ring-activity">—</span></span>
+      <span class="ring-stat"><b>HRV bal.</b> <span id="ring-hrv">—</span></span>
+      <span class="ring-stamp" id="ring-stamp">—</span>
+    </aside>
+
     <!-- ═══════════ LEDE ═══════════ -->
     <section class="lede">
       <div>
@@ -1604,7 +1669,7 @@
               <span class="note-type">${label}.</span>
               <span class="note-text">${escapeHtml(e.note || "—")}</span>
             </div>
-            <span class="note-tag">${e.type === "failure" ? "ON HONOR" : "LOGGED"}${amount}</span>
+            <span class="note-tag">${e.source === "oura" ? "VIA OURA" : (e.type === "failure" ? "ON HONOR" : "LOGGED")}${amount}</span>
           </div>
         `;
       }).join("");
@@ -1798,9 +1863,104 @@
       closeColumnEditor();
     });
 
+    // ─── OURA (read-only feed sourced from data/oura.json) ───
+    let ouraEntries = [];
+    let ouraData = null;
+
+    function allEntries() {
+      return [...entries, ...ouraEntries].sort((a, b) => b.ts - a.ts);
+    }
+
+    async function loadOura() {
+      try {
+        const res = await fetch("./data/oura.json", { cache: "no-store" });
+        if (!res.ok) return null;
+        return await res.json();
+      } catch (e) {
+        // file:// origin or no data yet — gracefully no-op.
+        return null;
+      }
+    }
+
+    function ouraToEntries(data) {
+      if (!data || !Array.isArray(data.days)) return [];
+      const out = [];
+      for (const d of data.days) {
+        if (d.sleep_minutes && d.sleep_minutes > 0) {
+          const ts = new Date(d.date + "T08:00:00").getTime();
+          const h = Math.floor(d.sleep_minutes / 60);
+          const m = d.sleep_minutes % 60;
+          const score = d.sleep_score != null ? ` Sleep score ${d.sleep_score}.` : "";
+          out.push({
+            id: `oura-sleep-${d.date}`,
+            ts, type: "sleep",
+            amount: `${h}h ${m}m`,
+            note: `Logged automatically by the ring.${score}`,
+            source: "oura",
+          });
+        }
+      }
+      if (Array.isArray(data.workouts)) {
+        for (const w of data.workouts) {
+          if (!w.start) continue;
+          const ts = new Date(w.start).getTime();
+          const activity = (w.activity || "movement").replace(/_/g, " ");
+          out.push({
+            id: `oura-workout-${w.id || w.start}`,
+            ts, type: "workout",
+            amount: w.duration_min ? `${w.duration_min} min` : "",
+            note: `Detected: ${activity}.${w.calories ? ` ~${Math.round(w.calories)} cal.` : ""}`,
+            source: "oura",
+          });
+        }
+      }
+      return out;
+    }
+
+    function renderRingRibbon(data) {
+      const ribbon = document.getElementById("ring-ribbon");
+      if (!data || !Array.isArray(data.days) || !data.days.length) {
+        ribbon.hidden = true;
+        return;
+      }
+      const today = data.days[0]; // sorted desc by date
+      const yest = data.days[1];
+      const setStat = (id, val, low, high) => {
+        const el = document.getElementById(id);
+        const wrap = el.parentElement;
+        wrap.classList.remove("good", "poor");
+        if (val == null || val === "") { el.textContent = "—"; return; }
+        el.textContent = val;
+        if (typeof low === "number" && typeof high === "number" && typeof val === "number") {
+          if (val >= high) wrap.classList.add("good");
+          else if (val < low) wrap.classList.add("poor");
+        }
+      };
+      setStat("ring-readiness", today.readiness_score ?? null, 70, 85);
+      const sleepMin = today.sleep_minutes ?? (yest && yest.sleep_minutes) ?? null;
+      document.getElementById("ring-sleep").textContent = sleepMin
+        ? `${Math.floor(sleepMin / 60)}h ${sleepMin % 60}m`
+        : "—";
+      const actMin = (today.high_activity_minutes || 0) + (today.medium_activity_minutes || 0);
+      document.getElementById("ring-activity").textContent = actMin ? `${actMin} min` : "—";
+      const hrv = today.hrv_balance;
+      document.getElementById("ring-hrv").textContent = hrv != null ? String(hrv) : "—";
+      const stamp = new Date(data.generated_at);
+      document.getElementById("ring-stamp").textContent =
+        `Synced ${stamp.toISOString().slice(0, 10)} ${String(stamp.getUTCHours()).padStart(2, "0")}:${String(stamp.getUTCMinutes()).padStart(2, "0")} UTC`;
+      ribbon.hidden = false;
+    }
+
     // ─── INIT ─────────────────────────────────────────────
     let entries = seedIfEmpty();
-    renderAll(entries);
+    renderAll(allEntries());
+
+    loadOura().then((data) => {
+      ouraData = data;
+      ouraEntries = ouraToEntries(data);
+      renderRingRibbon(data);
+      if (ouraEntries.length) renderAll(allEntries());
+    });
 
     // ─── FORM ─────────────────────────────────────────────
     document.getElementById("log-form").addEventListener("submit", (ev) => {
@@ -1820,7 +1980,7 @@
       const entry = { id: ts, ts, type, amount, note };
       entries = [entry, ...entries].sort((a, b) => b.ts - a.ts);
       saveEntries(entries);
-      renderAll(entries);
+      renderAll(allEntries());
       form.reset();
       // flash the most recent note
       const first = document.querySelector(".notes-list .note");
@@ -1845,7 +2005,7 @@
       localStorage.removeItem(COLUMNS_KEY);
       entries = seedIfEmpty();
       columns = seedColumnsIfEmpty();
-      renderAll(entries);
+      renderAll(allEntries());
       renderColumn();
     });
 
