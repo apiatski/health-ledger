@@ -28,7 +28,11 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    html { font-size: 17px; scroll-behavior: smooth; }
+    html {
+      font-size: 17px;
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+    }
 
     body {
       background-color: var(--paper);
@@ -43,6 +47,9 @@
       min-height: 100vh;
       overflow-x: hidden;
       font-feature-settings: "onum", "liga", "kern";
+      text-rendering: optimizeLegibility;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-font-smoothing: antialiased;
     }
 
     /* paper grain overlay */
@@ -1158,14 +1165,15 @@
     @media (max-width: 920px) {
       .lede, .middle, .lower {
         grid-template-columns: 1fr;
-        gap: 2.25rem;
+        gap: 1.75rem;
       }
       .streak-hero, .witnesses, .log-form-wrap {
         border-left: none;
         padding-left: 0;
         border-top: 1px solid var(--rule);
-        padding-top: 2rem;
+        padding-top: 1.75rem;
       }
+      .streak-number { font-size: clamp(4.5rem, 18vw, 6.5rem); }
       .scoreboard-grid {
         grid-template-columns: repeat(3, 1fr);
         row-gap: 1.5rem;
@@ -1174,17 +1182,56 @@
       .metric:nth-child(4) { padding-left: 0; }
       .note { grid-template-columns: 90px 1fr; }
       .note-tag { grid-column: 2; justify-self: start; }
-      footer { grid-template-columns: 1fr; text-align: center; }
+      footer { grid-template-columns: 1fr; text-align: center; gap: 1.5rem; }
       footer .right { text-align: center; }
       footer .seal { margin: 0 auto; }
     }
 
     @media (max-width: 520px) {
-      .meta-strip { font-size: 0.6rem; gap: 0.5rem; }
+      .page { padding: 1.5rem 1rem 3rem; }
+      .meta-strip { font-size: 0.6rem; gap: 0.4rem; }
       .meta-strip span:nth-child(2) { order: -1; width: 100%; text-align: center; }
-      .scoreboard-grid { grid-template-columns: repeat(2, 1fr); }
-      .metric { border-right: none; border-bottom: 1px solid var(--rule-soft); padding: 0.85rem 0.5rem; }
+      .subtitle { font-size: 1rem; }
+      .ring-ribbon { padding: 0.75rem 0.85rem; gap: 0.6rem 1rem; font-size: 0.65rem; }
+      .lede h2 { font-size: 1.7rem; line-height: 1.1; }
+      .lead-paragraph { font-size: 1.05rem; line-height: 1.55; }
+      .lead-paragraph::first-letter { font-size: 4em; }
+      .streak-hero { padding-top: 1.5rem; }
+      .streak-number { font-size: 4.75rem; }
+      .streak-unit { font-size: 1.1rem; }
+      .scoreboard, .editor-column, .middle, .lower { padding: 2rem 0; }
+      .section-head { font-size: 1.2rem; }
+      .scoreboard-grid { grid-template-columns: repeat(2, 1fr); column-gap: 0.75rem; }
+      .metric {
+        border-right: none;
+        border-bottom: 1px solid var(--rule-soft);
+        padding: 0.85rem 0.5rem;
+      }
+      .metric:nth-child(2n) {
+        border-left: 1px solid var(--rule-soft);
+        padding-left: 0.85rem;
+      }
+      .metric:nth-child(odd) { padding-left: 0; }
+      .metric-value { font-size: 2.1rem; }
       .field-row { grid-template-columns: 1fr; }
+      .note { grid-template-columns: 1fr; gap: 0.3rem; padding: 0.85rem 0; }
+      .note-time { padding-top: 0; }
+      .note-tag { grid-column: 1; justify-self: start; margin-top: 0.25rem; }
+      .column-title { font-size: 1.55rem; }
+      .column-body { font-size: 1.08rem; line-height: 1.6; }
+      .column-body p:first-child::first-letter { font-size: 3.8em; }
+      .editor-kicker::before, .editor-kicker::after { width: 30px; }
+      .pull-quote { padding: 2.25rem 0 1.5rem; }
+      .pull-quote::before { font-size: 3rem; padding: 0 0.75rem; top: -0.4rem; }
+      .pull-quote q { font-size: 1.35rem; }
+      .chart { gap: 0.4rem; height: 200px; }
+      .bar-value { font-size: 0.62rem; }
+      footer { padding-top: 2rem; }
+      footer .seal { width: 88px; height: 88px; font-size: 0.95rem; }
+      footer .wipe { padding: 0.6rem 0; }
+      .edit-btn { padding: 0.95rem 1.5rem; }
+      .editor-actions button { padding: 0.95rem 1.3rem; }
+      .submit-btn { padding: 1.1rem 1.5rem; }
     }
   </style>
 </head>
